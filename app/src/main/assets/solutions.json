@@ -4,5 +4,11 @@
     "description": "Find the number of contiguous subarrays where the product of all the elements in the subarray is strictly less than k",
     "category": "Prefix Sum",
     "code": "if (k <= 1) return 0\nvar left = 0\nvar right = 0\nvar count = 0\nvar prefix = 1\n\nwhile (right < nums.size) {\n    prefix *= nums[right]\n\nwhile (prefix >= k) {   \nprefix /= nums[left]\n   left++\n}\n\ncount += (right - left) + 1\nright++\n}\n\nreturn count"
+  },
+  {
+    "title": "547. Number of Provinces",
+    "description": "Find the number of directly or indirectly connected cities in an adjacency matrix where check[i][j] == 1 indicates connection",
+    "category": "Matrix Traversal",
+    "code": "val size = isConnected.size\nval end = size - 1\nval visitedCities = BooleanArray(size) { false }\nvar connections = 0\n\n  fun checkNeighbor(city: Int) {\n    for (neighbor in 0..end) {\n      if (isConnected[city][neighbor] == 1 && !visitedCities[neighbor]) {\n        visitedCities[neighbor] = true\n        checkNeighbor(neighbor)\n      }\n    }\n  }\n\n  for (city in 0..end) {\n     if (!visitedCities[city]) {\n      connections++\n      visitedCities[city] = true\n      checkNeighbor(city)\n    }\n  }\n        \nreturn connections"
   }
 ]
