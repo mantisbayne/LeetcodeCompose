@@ -10,14 +10,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mantisbayne.leetcodecompose.data.SolutionModel
 import com.mantisbayne.leetcodecompose.viewmodel.SolutionViewModel
 
@@ -38,10 +44,76 @@ fun SolutionScreen(
     modifier: Modifier,
     viewModel: SolutionViewModel
 ) {
-    val solutions by viewModel.solutions.collectAsState()
+    val uiState by viewModel.solutions.collectAsStateWithLifecycle()
     var selectedCategory by rememberSaveable { mutableStateOf<String?>(null) }
     var expandedSolution by rememberSaveable { mutableStateOf<String?>(null) }
 
+    when {
+        uiState.loading -> LoadingState(modifier)
+        uiState.empty -> Text("No solutions available.")
+        !uiState.error.isNullOrBlank() -> ErrorState(modifier, uiState.error ?: "An error occurred")
+        else -> SolutionsContent(
+            uiState.solutions,
+            {
+                selectedCategory = it
+                expandedSolution = null
+            },
+            { solution ->
+                val expanded = solution.title == expandedSolution
+                expandedSolution = if (expanded) null else solution.title
+            },
+            selectedCategory,
+            expandedSolution,
+            modifier
+        )
+    }
+}
+
+@Composable
+fun LoadingState(modifier: Modifier) {
+    Box(
+        modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+fun ErrorState(modifier: Modifier, text: String) {
+    Box(
+        modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = "error",
+                modifier = Modifier.size(56.dp),
+                tint = MaterialTheme.colorScheme.error
+            )
+            Text(
+                text = text,
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+    }
+}
+
+@Composable
+fun SolutionsContent(
+    solutions: List<SolutionModel>,
+    onCategoryClicked: (String?) -> Unit,
+    onItemClicked: (SolutionModel) -> Unit,
+    selectedCategory: String?,
+    expandedSolution: String?,
+    modifier: Modifier
+) {
     Column(
         modifier
             .fillMaxWidth()
@@ -51,29 +123,24 @@ fun SolutionScreen(
             solutions.map { it.category }.distinct(),
             selectedCategory = selectedCategory,
             onCategoryClicked = {
-                selectedCategory = it
-                expandedSolution = null
+                onCategoryClicked(it)
             }
         )
-
-        if (solutions.isEmpty()) {
-            Text("No solutions available.")
-        } else {
-            LazyColumn(
-                Modifier.fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(solutions.filter { selectedCategory == null || it.category == selectedCategory }) { solution ->
-                    val expanded = solution.title == expandedSolution
-                    SolutionItem(
-                        expanded,
-                        solution,
-                        onItemClicked = {
-                            expandedSolution = if (expanded) null else solution.title
-                        }
-                    )
-                }
+        LazyColumn(
+            Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(solutions.filter { selectedCategory == null || it.category == selectedCategory }) { solution ->
+                val expanded = solution.title == expandedSolution
+                SolutionItem(
+                    expanded,
+                    solution,
+                    onItemClicked = {
+                        onItemClicked(solution)
+                    }
+                )
             }
         }
     }
@@ -134,7 +201,8 @@ fun SolutionItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {
         Column(
-            Modifier.fillMaxSize()
+            Modifier
+                .fillMaxSize()
                 .padding(16.dp)
         ) {
             Text(text = solutionModel.title, style = MaterialTheme.typography.titleMedium)
@@ -144,7 +212,7 @@ fun SolutionItem(
                 Box(
                     Modifier
                         .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.onPrimary)
+                        .background(MaterialTheme.colorScheme.onPrimary, RoundedCornerShape(8.dp))
                         .padding(4.dp)
                 ) {
                     Text(

@@ -22,5 +22,11 @@
     "description": "From a list of strings, group the anagrams together in a list of list of strings",
     "category": "Hash table",
     "code": "fun groupAnagrams(strs: Array<String>): List<List<String>> {\n    val result = mutableMapOf<String, MutableList<String>>()\n\n    strs.forEach { str ->\n        val anagramStr = str.toCharArray().sorted().joinToString(\"\")\n        result.getOrPut(anagramStr) { mutableListOf() }.add(str)\n    }\n\n    return result.values.toList()\n}"
+  },
+  {
+    "title": "348. Design Tic-Tac-Toe",
+    "description": "Return if a player won after a move",
+    "category": "Prefix Sum",
+    "code": "class TicTacToe(n: Int) {\n\n    val rows = IntArray(n) { 0 }\n    val columns = IntArray(n) { 0 }\n    var diagonal = 0\n    var antidiagonal = 0\n\n    fun move(row: Int, col: Int, player: Int): Int {\n        if (player == 1) {\n            rows[row] += 1\n            columns[col] += 1\n        } else {\n            rows[row] -= 1\n            columns[col] -= 1\n        }\n\n        if (row == col) {\n            if (player == 1) {\n                diagonal += 1\n            } else {\n                diagonal -= 1\n            }\n        }\n\n        if (row + col == rows.size - 1) {\n            if (player == 1) {\n                antidiagonal += 1\n            } else {\n                antidiagonal -= 1\n            }\n        }\n\n        if (valueIsWin(rows[row]) || valueIsWin(columns[col]) || valueIsWin(diagonal) || valueIsWin(\n                antidiagonal\n            )\n        ) {\n            return player\n        }\n\n        return 0\n    }\n    \n    private fun valueIsWin(value: Int) = abs(value) == rows.size\n}"
   }
 ]

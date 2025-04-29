@@ -21,8 +21,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SolutionViewModel @Inject constructor(private val application: Application) : ViewModel() {
 
-    private val _solutions = MutableStateFlow<List<SolutionModel>>(emptyList())
-    val solutions: StateFlow<List<SolutionModel>> = _solutions.asStateFlow()
+    private val _solutions = MutableStateFlow(UiState())
+    val solutions: StateFlow<UiState> = _solutions.asStateFlow()
 
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -33,14 +33,41 @@ class SolutionViewModel @Inject constructor(private val application: Application
     private fun loadSolutionsFromAssets() {
         viewModelScope.launch {
             try {
+                _solutions.update {
+                    it.copy(loading = true)
+                }
                 val inputStream = application.assets.open("solutions.json")
                 val jsonString = inputStream.bufferedReader().use { it.readText() }
 
                 val loadedSolutions = json.decodeFromString<List<SolutionModel>>(jsonString)
-                _solutions.update { loadedSolutions }
+                _solutions.update {
+                    if (loadedSolutions.isEmpty()) {
+                        it.copy(
+                            loading = false,
+                            empty = true
+                        )
+                    } else {
+                        it.copy(
+                            loading = false,
+                            solutions = loadedSolutions
+                        )
+                    }
+                }
             } catch (e: Exception) {
-                e.printStackTrace()
+                _solutions.update {
+                    it.copy(
+                        loading = false,
+                        error = e.message
+                    )
+                }
             }
         }
     }
 }
+
+data class UiState(
+    val loading: Boolean = false,
+    val error: String? = null,
+    val empty: Boolean = false,
+    val solutions: List<SolutionModel> = emptyList()
+)
