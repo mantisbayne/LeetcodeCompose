@@ -16,5 +16,11 @@
     "description": "Create a simple bank class checking valid transactions",
     "category": "Simulation",
     "code": "class Bank(balance: LongArray) {\n    private val tracker = mutableMapOf<Int, Long>()\n\n    init {\n        balance.forEachIndexed { index, value ->\n            tracker[index + 1] = value\n        }\n    }\n\n    fun transfer(account1: Int, account2: Int, money: Long): Boolean {\n        if (!isValidAccount(account1) || !isValidAccount(account2)) return false\n        if (tracker[account1]!! < money) return false\n\n        tracker[account1] = tracker[account1]!! - money\n        tracker[account2] = tracker[account2]!! + money\n        return true\n    }\n\n    fun deposit(account: Int, money: Long): Boolean {\n        if (!isValidAccount(account)) return false\n        tracker[account] = tracker[account]!! + money\n        return true\n    }\n\n    fun withdraw(account: Int, money: Long): Boolean {\n        if (!isValidAccount(account)) return false\n        if (tracker[account]!! < money) return false\n\n        tracker[account] = tracker[account]!! - money\n        return true\n    }\n\n    private fun isValidAccount(account: Int): Boolean {\n        return account in tracker.keys\n    }\n}"
+  },
+  {
+    "title": "49. Group Anagrams",
+    "description": "From a list of strings, group the anagrams together in a list of list of strings",
+    "category": "Hash table",
+    "code": "fun groupAnagrams(strs: Array<String>): List<List<String>> {\n    val result = mutableMapOf<String, MutableList<String>>()\n\n    strs.forEach { str ->\n        val anagramStr = str.toCharArray().sorted().joinToString(\"\")\n        result.getOrPut(anagramStr) { mutableListOf() }.add(str)\n    }\n\n    return result.values.toList()\n}"
   }
 ]

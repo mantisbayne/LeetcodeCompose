@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,6 +40,7 @@ fun SolutionScreen(
 ) {
     val solutions by viewModel.solutions.collectAsState()
     var selectedCategory by rememberSaveable { mutableStateOf<String?>(null) }
+    var expandedSolution by rememberSaveable { mutableStateOf<String?>(null) }
 
     Column(
         modifier
@@ -50,7 +50,10 @@ fun SolutionScreen(
         CategoryDropDown(
             solutions.map { it.category }.distinct(),
             selectedCategory = selectedCategory,
-            onCategoryClicked = { selectedCategory = it },
+            onCategoryClicked = {
+                selectedCategory = it
+                expandedSolution = null
+            }
         )
 
         if (solutions.isEmpty()) {
@@ -62,7 +65,14 @@ fun SolutionScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(solutions.filter { selectedCategory == null || it.category == selectedCategory }) { solution ->
-                    SolutionItem(solution)
+                    val expanded = solution.title == expandedSolution
+                    SolutionItem(
+                        expanded,
+                        solution,
+                        onItemClicked = {
+                            expandedSolution = if (expanded) null else solution.title
+                        }
+                    )
                 }
             }
         }
@@ -73,9 +83,9 @@ fun SolutionScreen(
 fun CategoryDropDown(
     categories: List<String>,
     selectedCategory: String?,
-    onCategoryClicked: (String) -> Unit
+    onCategoryClicked: (String?) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by rememberSaveable { mutableStateOf(false) }
 
     Box(
         modifier = Modifier.fillMaxWidth(),
@@ -85,6 +95,15 @@ fun CategoryDropDown(
             Text(selectedCategory ?: "Select category")
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = {
+                    Text("All")
+                },
+                onClick = {
+                    onCategoryClicked(null)
+                    expanded = false
+                }
+            )
             categories.forEach { category ->
                 DropdownMenuItem(
                     text = {
@@ -101,13 +120,16 @@ fun CategoryDropDown(
 }
 
 @Composable
-fun SolutionItem(solutionModel: SolutionModel) {
-    var showCode by rememberSaveable { mutableStateOf(false) }
+fun SolutionItem(
+    isExpanded: Boolean,
+    solutionModel: SolutionModel,
+    onItemClicked: () -> Unit
+) {
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { showCode = !showCode },
+            .clickable { onItemClicked() },
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {
@@ -117,7 +139,7 @@ fun SolutionItem(solutionModel: SolutionModel) {
         ) {
             Text(text = solutionModel.title, style = MaterialTheme.typography.titleMedium)
             Text(text = solutionModel.description)
-            if (showCode) {
+            if (isExpanded) {
                 Spacer(Modifier.height(8.dp))
                 Box(
                     Modifier
