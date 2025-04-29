@@ -10,5 +10,11 @@
     "description": "Find the number of directly or indirectly connected cities in an adjacency matrix where check[i][j] == 1 indicates connection",
     "category": "Matrix Traversal",
     "code": "val size = isConnected.size\nval end = size - 1\nval visitedCities = BooleanArray(size) { false }\nvar connections = 0\n\n  fun checkNeighbor(city: Int) {\n    for (neighbor in 0..end) {\n      if (isConnected[city][neighbor] == 1 && !visitedCities[neighbor]) {\n        visitedCities[neighbor] = true\n        checkNeighbor(neighbor)\n      }\n    }\n  }\n\n  for (city in 0..end) {\n     if (!visitedCities[city]) {\n      connections++\n      visitedCities[city] = true\n      checkNeighbor(city)\n    }\n  }\n        \nreturn connections"
+  },
+  {
+    "title": "2043. Simple Bank System",
+    "description": "Create a simple bank class checking valid transactions",
+    "category": "Simulation",
+    "code": "class Bank(balance: LongArray) {\n    private val tracker = mutableMapOf<Int, Long>()\n\n    init {\n        balance.forEachIndexed { index, value ->\n            tracker[index + 1] = value\n        }\n    }\n\n    fun transfer(account1: Int, account2: Int, money: Long): Boolean {\n        if (!isValidAccount(account1) || !isValidAccount(account2)) return false\n        if (tracker[account1]!! < money) return false\n\n        tracker[account1] = tracker[account1]!! - money\n        tracker[account2] = tracker[account2]!! + money\n        return true\n    }\n\n    fun deposit(account: Int, money: Long): Boolean {\n        if (!isValidAccount(account)) return false\n        tracker[account] = tracker[account]!! + money\n        return true\n    }\n\n    fun withdraw(account: Int, money: Long): Boolean {\n        if (!isValidAccount(account)) return false\n        if (tracker[account]!! < money) return false\n\n        tracker[account] = tracker[account]!! - money\n        return true\n    }\n\n    private fun isValidAccount(account: Int): Boolean {\n        return account in tracker.keys\n    }\n}"
   }
 ]
