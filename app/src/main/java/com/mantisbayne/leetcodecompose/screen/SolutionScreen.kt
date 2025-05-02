@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,7 +27,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -36,13 +36,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import com.mantisbayne.leetcodecompose.data.SolutionModel
 import com.mantisbayne.leetcodecompose.viewmodel.SolutionViewModel
+import com.mantisbayne.navigation.NavHostRoutes
 
 @Composable
 fun SolutionScreen(
-    modifier: Modifier,
-    viewModel: SolutionViewModel
+    modifier: Modifier = Modifier,
+    viewModel: SolutionViewModel,
+    navController: NavController
 ) {
     val uiState by viewModel.solutions.collectAsStateWithLifecycle()
     var selectedCategory by rememberSaveable { mutableStateOf<String?>(null) }
@@ -53,6 +56,7 @@ fun SolutionScreen(
         uiState.empty -> Text("No solutions available.")
         !uiState.error.isNullOrBlank() -> ErrorState(modifier, uiState.error ?: "An error occurred")
         else -> SolutionsContent(
+            modifier,
             uiState.solutions,
             {
                 selectedCategory = it
@@ -64,7 +68,7 @@ fun SolutionScreen(
             },
             selectedCategory,
             expandedSolution,
-            modifier
+            navController
         )
     }
 }
@@ -107,25 +111,42 @@ fun ErrorState(modifier: Modifier, text: String) {
 
 @Composable
 fun SolutionsContent(
+    modifier: Modifier,
     solutions: List<SolutionModel>,
     onCategoryClicked: (String?) -> Unit,
     onItemClicked: (SolutionModel) -> Unit,
     selectedCategory: String?,
     expandedSolution: String?,
-    modifier: Modifier
+    navController: NavController
 ) {
     Column(
         modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        CategoryDropDown(
-            solutions.map { it.category }.distinct(),
-            selectedCategory = selectedCategory,
-            onCategoryClicked = {
-                onCategoryClicked(it)
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Button(
+                    onClick = { navController.navigate(NavHostRoutes.VISUALIZER.name) }
+                ) {
+                    Text(text = "Algorithm Visualizer")
+                }
+                CategoryDropDown(
+                    solutions.map { it.category }.distinct(),
+                    selectedCategory = selectedCategory,
+                    onCategoryClicked = {
+                        onCategoryClicked(it)
+                    }
+                )
             }
-        )
+        }
         LazyColumn(
             Modifier
                 .fillMaxSize()
@@ -155,7 +176,6 @@ fun CategoryDropDown(
     var expanded by rememberSaveable { mutableStateOf(false) }
 
     Box(
-        modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.TopCenter
     ) {
         Button(onClick = { expanded = true }) {

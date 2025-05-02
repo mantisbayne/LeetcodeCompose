@@ -1,5 +1,8 @@
 package com.mantisbayne.leetcodecompose.problems
 
+import com.mantisbayne.leetcodecompose.viewmodel.CoinChangeStep
+import kotlinx.coroutines.delay
+
 fun climbStairs(n: Int): Int {
     if (n <= 2) return n
     val memo = IntArray(n + 1)
@@ -32,4 +35,30 @@ fun lengthOfLIS(nums: IntArray): Int {
     }
 
     return allLis.maxOrNull() ?: 0
+}
+
+suspend fun coinChange(
+    coins: IntArray,
+    amount: Int,
+    onCoinChange: suspend (dp: List<Int>, currentIndex: Int, currentCoin: Int, sourceIndex: Int, valueFromSource: Int) -> Unit
+) {
+    // save the lengths, make the size larger than the amount
+    val dp = IntArray(amount + 1) { amount + 1 }
+    // looking at all numbers from 0 to amount.  what is amount 0?
+    dp[0] = 0
+
+    // loop over
+    for (i in 1..amount) {
+        for (coin in coins) {
+            val from = i - coin
+            if (from >= 0) {
+                val candidate = dp[from] + 1
+                if (candidate < dp[i]) {
+                    dp[i] = candidate
+                }
+
+                onCoinChange(dp.toList(), i, coin, from, dp[from])
+            }
+        }
+    }
 }
