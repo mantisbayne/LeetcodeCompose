@@ -4,13 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mantisbayne.leetcodecompose.problems.coinChange
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.coroutines.coroutineContext
 
 @HiltViewModel
 class VisualizerViewModel @Inject constructor() : ViewModel() {
@@ -24,26 +26,28 @@ class VisualizerViewModel @Inject constructor() : ViewModel() {
     private val _dpgrid = MutableStateFlow(generateDpGrid(10, 10))
     val dpgrid = _dpgrid.asStateFlow()
 
-    private val _algorithm = MutableStateFlow(Algorithm.BFS)
+    private val _algorithm = MutableStateFlow(Algorithm.EMPTY)
     val algorithm = _algorithm.asStateFlow()
 
-    fun setAlgorithm(newAlgorithm: Algorithm) {
-        _algorithm.update { newAlgorithm }
-    }
+    private var algorithmJob: Job? = null
 
-    init {
-        processAlgorithmUpdate()
+    fun setAlgorithm(newAlgorithm: Algorithm) {
+        algorithmJob?.cancel()
+        println("debugg: cancel job $algorithmJob")
+        resetGrid()
+        _algorithm.value = newAlgorithm
     }
 
     fun processAlgorithmUpdate() {
-        viewModelScope.launch {
-            _algorithm.collectLatest { newAlgorithm ->
-                when (newAlgorithm) {
-                    Algorithm.DFS -> generateDfs()
-                    Algorithm.BFS -> generateBfs()
-                    Algorithm.BACKTRACKING -> generateBacktracking()
-                    Algorithm.UNION_FIND -> generateUnionFind()
-                }
+        algorithmJob?.cancel()
+        algorithmJob = viewModelScope.launch {
+            println("debugg: current job $algorithmJob")
+            when (_algorithm.value) {
+                Algorithm.DFS -> generateDfs()
+                Algorithm.BFS -> generateBfs()
+                Algorithm.BACKTRACKING -> generateBacktracking()
+                Algorithm.UNION_FIND -> generateUnionFind()
+                Algorithm.EMPTY -> {}
             }
         }
     }
@@ -54,17 +58,22 @@ class VisualizerViewModel @Inject constructor() : ViewModel() {
         val visited = Array(numRows) { BooleanArray(numCols) }
 
         viewModelScope.launch {
-            dfs(0, 0, visited)
+            while (isActive) {
+                dfs(0, 0, visited)
+            }
         }
     }
 
     private fun generateBfs() {
+        println("debugg: generate bfs")
         val numRows = _grid.value.size
         val numCols = _grid.value[0].size
         val visited = Array(numRows) { BooleanArray(numCols) }
 
         viewModelScope.launch {
-            bfs(0, 0, visited)
+            while (isActive) {
+                bfs(0, 0, visited)
+            }
         }
     }
 
@@ -102,8 +111,8 @@ class VisualizerViewModel @Inject constructor() : ViewModel() {
         val n = _dpgrid.value[0].size
         val dp = Array(m + 1) { IntArray(n + 1) }
 
-        for (i in 0..m) {
-            for (j in 0..n) {
+        for (i in 0..<m) {
+            for (j in 0..<n) {
                 dp[i][j] = when {
                     i == 0 -> j
                     j == 0 -> i
@@ -151,11 +160,11 @@ class VisualizerViewModel @Inject constructor() : ViewModel() {
     }
 
     private suspend fun dfs(row: Int, col: Int, visited: Array<BooleanArray>) {
-        resetGrid()
         if (row !in visited.indices || col !in visited[0].indices) return
         if (visited[row][col]) return
 
         visited[row][col] = true
+        delay(1000)
         updateGridCell(row, col)
 
         val directions = getDirections(row, col)
@@ -176,7 +185,6 @@ class VisualizerViewModel @Inject constructor() : ViewModel() {
     )
 
     private suspend fun bfs(row: Int, col: Int, visited: Array<BooleanArray>) {
-        resetGrid()
 
         val queue = ArrayDeque<Pair<Int, Int>>()
         queue.add(row to col)
@@ -188,6 +196,7 @@ class VisualizerViewModel @Inject constructor() : ViewModel() {
             if (row !in visited.indices || col !in visited[0].indices) continue
 
             visited[row][col] = true
+            delay(500)
             updateGridCell(row, col)
 
             val directions = getDirections(row, col)
@@ -201,7 +210,6 @@ class VisualizerViewModel @Inject constructor() : ViewModel() {
     }
 
     private suspend fun backtracking(row: Int, col: Int, visited: Array<BooleanArray>): Boolean {
-        resetGrid()
         if (row !in visited.indices || col !in visited[0].indices) return false
         if (visited[row][col]) return false
         if (row == visited.lastIndex && col == visited[0].lastIndex) {
@@ -210,6 +218,7 @@ class VisualizerViewModel @Inject constructor() : ViewModel() {
         }
 
         visited[row][col] = true
+        delay(1000)
         updateGridCell(row, col)
 
         for ((nextRow, nextCol) in getDirections(row, col)) {
@@ -230,6 +239,7 @@ class VisualizerViewModel @Inject constructor() : ViewModel() {
 
     private fun updateGridCell(row: Int, col: Int) {
         _grid.value = _grid.value.map { it.toMutableList() }.also { grid ->
+            println("debugg: grid $grid $row $col")
             grid[row][col] = grid[row][col].copy(visited = true)
         }
     }
@@ -251,7 +261,8 @@ enum class Algorithm {
     DFS,
     BFS,
     BACKTRACKING,
-    UNION_FIND
+    UNION_FIND,
+    EMPTY
 }
 
 data class GridCell(

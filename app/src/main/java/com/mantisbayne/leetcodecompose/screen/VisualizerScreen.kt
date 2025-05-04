@@ -51,9 +51,6 @@ fun VisualizerScreen(
 
         Button(
             onClick = {
-                showVisualizer = false
-                showCoinChange = false
-                showDynamicProgramming = false
                 expanded = true
             }
         ) {
@@ -63,18 +60,19 @@ fun VisualizerScreen(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            Algorithm.entries.forEach {
-                DropdownMenuItem(
-                    text = {
-                        Text(text = it.name)
-                    },
-                    onClick = {
-                        expanded = false
-                        viewModel.setAlgorithm(it)
-                        showVisualizer = true
-                    }
-                )
-            }
+            Algorithm.entries
+                .filter { it != Algorithm.EMPTY }.forEach {
+                    DropdownMenuItem(
+                        text = {
+                            Text(text = it.name)
+                        },
+                        onClick = {
+                            expanded = false
+                            viewModel.setAlgorithm(it)
+                            showVisualizer = true
+                        }
+                    )
+                }
             DropdownMenuItem(
                 text = {
                     Text(text = "Dynamic Programming")
@@ -107,7 +105,7 @@ fun VisualizerScreen(
                 grid,
                 algorithm.name,
                 onClick = {
-                    viewModel.setAlgorithm(algorithm)
+                    viewModel.processAlgorithmUpdate()
                 }
             )
         }
