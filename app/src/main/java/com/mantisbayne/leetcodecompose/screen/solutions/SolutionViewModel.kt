@@ -32,19 +32,19 @@ class SolutionViewModel @Inject constructor(private val solutionsService: Soluti
 
                 val loadedSolutions = solutionsService.getSolutions()
 
-                    _solutions.update {
-                        if (loadedSolutions.isEmpty()) {
-                            it.copy(
-                                loading = false,
-                                empty = true
-                            )
-                        } else {
-                            it.copy(
-                                loading = false,
-                                solutions = loadedSolutions
-                            )
-                        }
+                _solutions.update {
+                    if (loadedSolutions.isEmpty()) {
+                        it.copy(
+                            loading = false,
+                            empty = true
+                        )
+                    } else {
+                        it.copy(
+                            loading = false,
+                            solutions = loadedSolutions
+                        )
                     }
+                }
             } catch (e: Exception) {
                 _solutions.update {
                     it.copy(
