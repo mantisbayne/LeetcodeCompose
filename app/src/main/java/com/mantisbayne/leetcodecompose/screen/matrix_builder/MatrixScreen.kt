@@ -5,13 +5,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -25,6 +27,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -41,14 +44,15 @@ fun MatrixScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                { Text("Matrix Transformer") }
+                { Text("Matrix Transformer", modifier = Modifier.fillMaxWidth()) }
             )
         }
     ) { innerPadding ->
         // loading and error handling go here
         MatrixScreenContent(
             Modifier.padding(innerPadding),
-            state
+            state,
+            viewModel::handleIntent
         )
     }
 
@@ -79,7 +83,7 @@ fun MatrixScreenContent(
         )
 
         OutlinedTextField(
-            modifier = Modifier.height(56.dp),
+            modifier = Modifier,
             value = rowInput,
             onValueChange = {
                 rowInput = it
@@ -90,17 +94,17 @@ fun MatrixScreenContent(
             placeholder = {
                 Text("Enter number of rows")
             },
-            textStyle = MaterialTheme.typography.bodyLarge
+            textStyle = MaterialTheme.typography.bodyLarge,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
 
         Spacer(Modifier.height(8.dp))
 
         OutlinedTextField(
-            modifier = Modifier.height(56.dp),
+            modifier = Modifier,
             value = colInput,
             onValueChange = {
                 colInput = it
-                // update cols in state
             },
             label = {
                 Text("M (columns)", style = MaterialTheme.typography.bodyLarge)
@@ -108,33 +112,37 @@ fun MatrixScreenContent(
             placeholder = {
                 Text("Enter number of columns")
             },
-            textStyle = MaterialTheme.typography.bodyLarge
+            textStyle = MaterialTheme.typography.bodyLarge,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
 
         Spacer(Modifier.height(16.dp))
 
+        // Dropdown
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded }
         ) {
+            TextField(
+                value = state.currentSelectedProblem.name.ifBlank { "Select a problem" },
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Choose problem") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+
             ExposedDropdownMenu(
-                modifier = Modifier.padding(16.dp),
                 expanded = expanded,
-                onDismissRequest = {
-                    expanded = !expanded
-                }
+                onDismissRequest = { expanded = false }
             ) {
                 state.menuItems.forEach { problemItem ->
                     DropdownMenuItem(
-                        text = { Text(problemItem) },
+                        text = { Text(problemItem.name) },
                         onClick = {
-                            onIntent(
-                                MatrixEvent.BuildMatrix(
-                                    rowInput.toInt(),
-                                    colInput.toInt(),
-                                    problemItem
-                                )
-                            )
+                            onIntent(MatrixEvent.UpdateCurrentProblem(problemItem))
+                            expanded = false
                         }
                     )
                 }
@@ -150,15 +158,19 @@ fun MatrixScreenContent(
         }
 
         Button(
+            modifier = Modifier.fillMaxWidth().height(56.dp).padding(horizontal = 16.dp),
             onClick = {
                 onIntent(
                     MatrixEvent.BuildMatrix(
                         rowInput.toInt(),
                         colInput.toInt(),
-                        problemItem
+                        state.currentSelectedProblem
                     )
                 )
             }
-        ) { }
+        ) {
+            Text("VISUALIZE",
+                style = MaterialTheme.typography.labelLarge)
+        }
     }
 }
