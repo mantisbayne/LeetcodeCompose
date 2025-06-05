@@ -1,4 +1,4 @@
-package com.mantisbayne.leetcodecompose.screen
+package com.mantisbayne.leetcodecompose.screen.solutions
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -38,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.mantisbayne.leetcodecompose.data.SolutionModel
-import com.mantisbayne.leetcodecompose.viewmodel.SolutionViewModel
 import com.mantisbayne.navigation.NavHostRoutes
 
 @Composable

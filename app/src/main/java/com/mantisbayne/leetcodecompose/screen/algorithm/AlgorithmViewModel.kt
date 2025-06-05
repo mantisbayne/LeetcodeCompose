@@ -1,4 +1,4 @@
-package com.mantisbayne.leetcodecompose.viewmodel
+package com.mantisbayne.leetcodecompose.screen.algorithm
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -6,13 +6,11 @@ import com.mantisbayne.leetcodecompose.problems.coinChange
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.coroutines.coroutineContext
 
 @HiltViewModel
 class VisualizerViewModel @Inject constructor() : ViewModel() {

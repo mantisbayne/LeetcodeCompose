@@ -1,4 +1,4 @@
-package com.mantisbayne.leetcodecompose.screen
+package com.mantisbayne.leetcodecompose.screen.algorithm
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,9 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.mantisbayne.leetcodecompose.viewmodel.Algorithm
-import com.mantisbayne.leetcodecompose.viewmodel.Grid
-import com.mantisbayne.leetcodecompose.viewmodel.VisualizerViewModel
 
 @Composable
 fun VisualizerScreen(
@@ -44,8 +41,7 @@ fun VisualizerScreen(
 
         var expanded by rememberSaveable { mutableStateOf(false) }
         var showVisualizer by rememberSaveable { mutableStateOf(false) }
-        var showDynamicProgramming by rememberSaveable { mutableStateOf(false) }
-        var showCoinChange by rememberSaveable { mutableStateOf(false) }
+
         val grid by viewModel.grid.collectAsState()
         val algorithm by viewModel.algorithm.collectAsState()
 
@@ -73,31 +69,6 @@ fun VisualizerScreen(
                         }
                     )
                 }
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Dynamic Programming")
-                },
-                onClick = {
-                    expanded = false
-                    viewModel.dynamicProgramming("test", "more")
-                    showDynamicProgramming = true
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Coin Change")
-                },
-                onClick = {
-                    expanded = false
-                    viewModel.runCoinChange(
-                        intArrayOf(
-                            1, 2, 8, 9, 4, 5, 3, 2, 1, 6, 7, 12, 10, 11, 15, 18, 20, 55, 25, 17
-                        ),
-                        33
-                    )
-                    showCoinChange = true
-                }
-            )
         }
 
         if (showVisualizer) {
@@ -108,14 +79,6 @@ fun VisualizerScreen(
                     viewModel.processAlgorithmUpdate()
                 }
             )
-        }
-
-        if (showCoinChange) {
-            CoinChangeVisualizer(viewModel)
-        }
-
-        if (showDynamicProgramming) {
-            DpVisualizer()
         }
     }
 }

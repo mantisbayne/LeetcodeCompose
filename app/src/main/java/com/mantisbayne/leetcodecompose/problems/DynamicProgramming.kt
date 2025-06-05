@@ -1,8 +1,5 @@
 package com.mantisbayne.leetcodecompose.problems
 
-import com.mantisbayne.leetcodecompose.viewmodel.CoinChangeStep
-import kotlinx.coroutines.delay
-
 fun climbStairs(n: Int): Int {
     if (n <= 2) return n
     val memo = IntArray(n + 1)
