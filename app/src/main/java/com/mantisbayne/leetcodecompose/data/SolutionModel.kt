@@ -9,3 +9,10 @@ data class SolutionModel(
     val category: String,
     val code: String
 )
+
+@Serializable
+data class MatrixModel(
+    val id: Int,
+    val name: String,
+    val description: String
+)

@@ -9,10 +9,18 @@ class SolutionsService @Inject constructor(
 ) {
 
     fun getSolutions(): List<SolutionModel> {
+        return getFromAssets("solutions")
+    }
+
+    fun getMatrixProblems(): List<MatrixModel> {
+        return getFromAssets("matrix")
+    }
+
+    private fun <T> getFromAssets(fileName: String): List<T> {
         val json = Json { ignoreUnknownKeys = true }
-        val inputStream = context.assets.open("solutions.json")
+        val inputStream = context.assets.open("$fileName.json")
         val jsonString = inputStream.bufferedReader().use { it.readText() }
-        val decodeFromString = json.decodeFromString<List<SolutionModel>>(jsonString)
+        val decodeFromString = json.decodeFromString<List<T>>(jsonString)
         return decodeFromString
     }
 }
