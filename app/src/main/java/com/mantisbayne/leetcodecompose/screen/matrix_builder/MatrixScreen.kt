@@ -101,7 +101,7 @@ fun MatrixScreenContent(
                 label = { Text("Rows (N)") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = rowsMenuExpanded) },
                 modifier = Modifier
-                    .menuAnchor(MenuAnchorType.PrimaryEditable)
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                     .fillMaxWidth()
             )
             ExposedDropdownMenu(
@@ -131,7 +131,7 @@ fun MatrixScreenContent(
                 label = { Text("Columns (M)") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = colsMenuExpanded) },
                 modifier = Modifier
-                    .menuAnchor(MenuAnchorType.PrimaryEditable)
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                     .fillMaxWidth()
             )
             ExposedDropdownMenu(
@@ -161,7 +161,7 @@ fun MatrixScreenContent(
                 label = { Text("Choose problem") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = problemMenuExpanded) },
                 modifier = Modifier
-                    .menuAnchor(MenuAnchorType.PrimaryEditable)
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                     .fillMaxWidth()
             )
 
