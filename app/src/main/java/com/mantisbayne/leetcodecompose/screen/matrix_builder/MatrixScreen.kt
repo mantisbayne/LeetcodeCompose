@@ -3,18 +3,23 @@ package com.mantisbayne.leetcodecompose.screen.matrix_builder
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -65,112 +70,134 @@ fun MatrixScreenContent(
     state: MatrixUiState,
     onIntent: (MatrixEvent) -> Unit
 ) {
-    var rowInput by rememberSaveable { mutableStateOf("") }
-    var colInput by rememberSaveable { mutableStateOf("") }
-    var expanded by rememberSaveable { mutableStateOf(false) }
+    val options = (1..9).toList()
+
+    var selectedRows by rememberSaveable { mutableStateOf<Int?>(null) }
+    var rowsMenuExpanded by rememberSaveable { mutableStateOf(false) }
+
+    var selectedCols by rememberSaveable { mutableStateOf<Int?>(null) }
+    var colsMenuExpanded by rememberSaveable { mutableStateOf(false) }
+
+    var problemMenuExpanded by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(
-            modifier = Modifier.padding(top = 16.dp),
-            text = "Enter Matrix Dimensions",
-            style = MaterialTheme.typography.titleMedium
-        )
+        Text("Select Matrix Dimensions", style = MaterialTheme.typography.titleMedium)
 
-        OutlinedTextField(
-            modifier = Modifier,
-            value = rowInput,
-            onValueChange = {
-                rowInput = it
-            },
-            label = {
-                Text("N (rows)", style = MaterialTheme.typography.bodyLarge)
-            },
-            placeholder = {
-                Text("Enter number of rows")
-            },
-            textStyle = MaterialTheme.typography.bodyLarge,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-
-        Spacer(Modifier.height(8.dp))
-
-        OutlinedTextField(
-            modifier = Modifier,
-            value = colInput,
-            onValueChange = {
-                colInput = it
-            },
-            label = {
-                Text("M (columns)", style = MaterialTheme.typography.bodyLarge)
-            },
-            placeholder = {
-                Text("Enter number of columns")
-            },
-            textStyle = MaterialTheme.typography.bodyLarge,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        // Dropdown
+        // Row count dropdown
         ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = !expanded }
+            expanded = rowsMenuExpanded,
+            onExpandedChange = { rowsMenuExpanded = !rowsMenuExpanded }
         ) {
             TextField(
-                value = state.currentSelectedProblem.name.ifBlank { "Select a problem" },
+                value = selectedRows?.toString() ?: "Select rows (N)",
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Choose problem") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                label = { Text("Rows (N)") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = rowsMenuExpanded) },
                 modifier = Modifier
+                    .menuAnchor(MenuAnchorType.PrimaryEditable)
                     .fillMaxWidth()
             )
-
             ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
+                expanded = rowsMenuExpanded,
+                onDismissRequest = { rowsMenuExpanded = false }
             ) {
-                state.menuItems.forEach { problemItem ->
+                options.forEach { row ->
                     DropdownMenuItem(
-                        text = { Text(problemItem.name) },
+                        text = { Text(row.toString()) },
                         onClick = {
-                            onIntent(MatrixEvent.UpdateCurrentProblem(problemItem))
-                            expanded = false
+                            selectedRows = row
+                            rowsMenuExpanded = false
                         }
                     )
                 }
             }
         }
 
-        AnimatedVisibility(
-            visible = state.problemDescriptionVisibility
+        ExposedDropdownMenuBox(
+            expanded = colsMenuExpanded,
+            onExpandedChange = { colsMenuExpanded = !colsMenuExpanded }
         ) {
-            Text(
-                state.currentSelectedProblem.name
+            TextField(
+                value = selectedCols?.toString() ?: "Select columns (M)",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Columns (M)") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = colsMenuExpanded) },
+                modifier = Modifier
+                    .menuAnchor(MenuAnchorType.PrimaryEditable)
+                    .fillMaxWidth()
             )
+            ExposedDropdownMenu(
+                expanded = colsMenuExpanded,
+                onDismissRequest = { colsMenuExpanded = false }
+            ) {
+                options.forEach { col ->
+                    DropdownMenuItem(
+                        text = { Text(col.toString()) },
+                        onClick = {
+                            selectedCols = col
+                            colsMenuExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        ExposedDropdownMenuBox(
+            expanded = problemMenuExpanded,
+            onExpandedChange = { problemMenuExpanded = !problemMenuExpanded }
+        ) {
+            TextField(
+                value = state.currentSelectedProblem.name.ifBlank { "Select a problem" },
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Choose problem") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = problemMenuExpanded) },
+                modifier = Modifier
+                    .menuAnchor(MenuAnchorType.PrimaryEditable)
+                    .fillMaxWidth()
+            )
+
+            ExposedDropdownMenu(
+                expanded = problemMenuExpanded,
+                onDismissRequest = { problemMenuExpanded = false }
+            ) {
+                state.menuItems.forEach { problemItem ->
+                    DropdownMenuItem(
+                        text = { Text(problemItem.name) },
+                        onClick = {
+                            onIntent(MatrixEvent.UpdateCurrentProblem(problemItem))
+                            problemMenuExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        AnimatedVisibility(state.problemDescriptionVisibility) {
+            Text(state.currentSelectedProblem.description)
         }
 
         Button(
-            modifier = Modifier.fillMaxWidth().height(56.dp).padding(horizontal = 16.dp),
+            enabled = selectedRows != null && selectedCols != null,
             onClick = {
                 onIntent(
                     MatrixEvent.BuildMatrix(
-                        rowInput.toInt(),
-                        colInput.toInt(),
+                        selectedRows!!,
+                        selectedCols!!,
                         state.currentSelectedProblem
                     )
                 )
             }
         ) {
-            Text("VISUALIZE",
-                style = MaterialTheme.typography.labelLarge)
+            Text("Build Matrix")
         }
     }
 }
